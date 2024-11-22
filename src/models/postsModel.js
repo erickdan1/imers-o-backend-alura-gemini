@@ -11,3 +11,12 @@ export async function getAllPosts() {
     const collections = db.collection('posts')
     return collections.find().toArray()
 };
+
+// async function to create a new post on database
+export async function createPost(newPost) {
+    // select database 'imersao-instabyte'
+    const db = connection.db('imersao-instabyte')
+    // select collection 'posts' from database
+    const collections = db.collection('posts')
+    return collections.insertOne(newPost)
+}
