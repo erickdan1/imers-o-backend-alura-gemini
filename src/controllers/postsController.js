@@ -1,5 +1,6 @@
 import fs from 'fs';
-import { getAllPosts, createPost, updatePost } from "../models/postsModel.js";
+import { getAllPosts, createPost, updatePost } from '../models/postsModel.js';
+import generateDescriptionWithGemini from '../services/geminiService.js'
 
 // function to list all posts
 export async function listPosts(req, res) {
@@ -63,18 +64,21 @@ export async function updateNewPost(req, res) {
   // extract the new post data from the request body
   const id = req.params.id;
   const urlImage = `http://localhost:3000/${id}.png`
-  const post = {
-    imgUrl: urlImage,
-    descricao: req.body.descricao,
-    alt: req.body.alt
-  }
-
+  
   try {
-    // create the new post in the database
-    const postCreated = await updatePost(id, post);
+    const imgBuffer = fs.readFileSync(`uploads/${id}.png`);
+    const descricao = await generateDescriptionWithGemini(imgBuffer)
+    
+    const post = {
+      imgUrl: urlImage,
+      descricao: descricao,
+      alt: req.body.alt
+    }
 
-    // send the created post as a JSON response with a 201 Created status code
-    res.status(201).json(postCreated);
+    // create the new post in the database
+    const postUpdated = await updatePost(id, post);
+    // send the updated post as a JSON response with a 201 Created status code
+    res.status(201).json(postUpdated);
   } catch (error) {
     // log the error to the console for debugging
     console.error(error.message);
